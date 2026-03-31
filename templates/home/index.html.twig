@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Welcome!{% endblock %}
+
+{% block body %}
+<h1>Welcome to Event Portal!</h1>
+
+{% if app.user %}
+    <p>Logged in as: {{ app.user.email }}</p>
+    <a href="{{ path('app_logout') }}">Logout</a>
+{% else %}
+    <a href="{{ path('app_login') }}">Login</a>
+    <a href="{{ path('app_register') }}">Register</a>
+{% endif %}
+{% endblock %}
