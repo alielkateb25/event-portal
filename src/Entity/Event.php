@@ -32,7 +32,11 @@ class Event
      * @var Collection<int, User>
      */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
+    #[ORM\JoinTable(name: 'event_user')]
     private Collection $registeredUsers;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $maxSeats = null;
 
     public function __construct()
     {
@@ -112,6 +116,18 @@ class Event
     public function removeRegisteredUser(User $registeredUser): static
     {
         $this->registeredUsers->removeElement($registeredUser);
+
+        return $this;
+    }
+
+    public function getMaxSeats(): ?int
+    {
+        return $this->maxSeats;
+    }
+
+    public function setMaxSeats(?int $maxSeats): static
+    {
+        $this->maxSeats = $maxSeats;
 
         return $this;
     }

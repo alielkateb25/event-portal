@@ -30,6 +30,16 @@
         </tbody>
     </table>
 
+    {% if app.user %}
+    <form method="POST" action="{{ path('app_event_register', {id: event.id}) }}">
+        <button type="submit" class="btn btn-primary">
+            Register for this Event
+        </button>
+    </form>
+    {% else %}
+    <p><a href="{{ path('app_login') }}">Login to register</a></p>
+    {% endif %}
+
     <a href="{{ path('app_event_index') }}">back to list</a>
 
     <a href="{{ path('app_event_edit', {'id': event.id}) }}">edit</a>
