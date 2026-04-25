@@ -1,15 +1,48 @@
+{# templates/home/index.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Welcome!{% endblock %}
 
 {% block body %}
-<h1>Welcome to Event Portal!</h1>
-
-{% if app.user %}
-    <p>Logged in as: {{ app.user.email }}</p>
-    <a href="{{ path('app_logout') }}">Logout</a>
-{% else %}
-    <a href="{{ path('app_login') }}">Login</a>
-    <a href="{{ path('app_register') }}">Register</a>
-{% endif %}
+<div class="container mt-5">
+    <h1>Welcome to Event Portal!</h1>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">👋 {% if app.user %}Welcome back!{% else %}Get Started{% endif %}</h5>
+                    
+                    {% if app.user %}
+                        <p class="card-text">Logged in as: {{ app.user.email }}</p>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_event_index') }}" class="btn btn-primary">Browse Events</a>
+                            <a href="{{ path('app_event_new') }}" class="btn btn-success">+ Create Event</a>
+                            <a href="{{ path('app_logout') }}" class="btn btn-outline-danger">Logout</a>
+                        </div>
+                    {% else %}
+                        <p class="card-text">Login to register for events or create your own.</p>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_login') }}" class="btn btn-primary">Login</a>
+                            <a href="{{ path('app_register') }}" class="btn btn-outline-secondary">Register</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">🎪 What is Event Portal?</h5>
+                    <p class="card-text">
+                        A platform to discover, register, and manage events. 
+                        Browse upcoming events, register with one click, and share your experience with reviews.
+                    </p>
+                    <a href="{{ path('app_event_index') }}" class="btn btn-outline-primary">View All Events →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

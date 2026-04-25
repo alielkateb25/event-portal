@@ -15,7 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/event')]
 final class EventController extends AbstractController
 {
-    #[Route(name: 'app_event_index', methods: ['GET'])]
+    #[Route('/', name: 'app_event_index', methods: ['GET'])]  // ← Added '/'
     public function index(EventRepository $eventRepository): Response
     {
         return $this->render('event/index.html.twig', [
