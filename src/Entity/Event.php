@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Entity\Review;
+use App\Entity\User;
 use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -38,8 +40,13 @@ class Event
     #[ORM\Column(nullable: true)]
     private ?int $maxSeats = null;
 
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'event', orphanRemoval: true)]
+    private Collection $reviews;
+    
     public function __construct()
     {
+        // ... existing initializations ...
+        $this->reviews = new ArrayCollection();
         $this->registeredUsers = new ArrayCollection();
     }
 
@@ -130,5 +137,45 @@ class Event
         $this->maxSeats = $maxSeats;
 
         return $this;
+    }
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+    
+    public function addReview(Review $review): self
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews->add($review);
+            $review->setEvent($this);
+        }
+        
+        return $this;
+    }
+    
+    public function removeReview(Review $review): self
+    {
+        if ($this->reviews->removeElement($review)) {
+            // set the owning side to null (unless already changed)
+            if ($review->getEvent() === $this) {
+                $review->setEvent(null);
+            }
+        }
+        
+        return $this;
+    }
+    
+    public function getAverageRating(): ?float
+    {
+        if ($this->reviews->isEmpty()) {
+            return null;
+        }
+        
+        $total = 0;
+        foreach ($this->reviews as $review) {
+            $total += $review->getRating();
+        }
+        
+        return round($total / $this->reviews->count(), 1);
     }
 }

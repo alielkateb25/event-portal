@@ -5,10 +5,11 @@ namespace App\Controller;
 
 use App\Entity\Event;
 use App\Service\EventRegistrationService;
+use Doctrine\ORM\EntityManagerInterface;  // ← Add this import
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class EventRegistrationController extends AbstractController
 {
@@ -38,14 +39,17 @@ class EventRegistrationController extends AbstractController
     }
     
     #[Route('/event/{id}/unregister', name: 'app_event_unregister', methods: ['POST'])]
-    public function unregister(Event $event, Request $request): Response
-    {
+    public function unregister(
+        Event $event, 
+        Request $request,
+        EntityManagerInterface $entityManager  // ← Inject EntityManager
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED');
         
         $user = $this->getUser();
         if ($event->getRegisteredUsers()->contains($user)) {
             $event->removeRegisteredUser($user);
-            $this->getDoctrine()->getManager()->flush();
+            $entityManager->flush();  // ← Use injected EntityManager
             $this->addFlash('success', 'Registration cancelled.');
         }
         

@@ -2,6 +2,11 @@
 
 This Event Management web-app provides you with the means to create events, invite people to participate in the chosen event and gain insight on guest reviews.
 
+## Team Roles
+- **Chayma Ellejmi** Backend, Security, Entities
+- **Farouk Hadj Mabrouk** Frontend, Twig, Styling
+- **Ali El Kateb** API, Ajax, Bonus Features, Documentation
+
 ## Database schema
 
 You will find the database structure in the link bellow :

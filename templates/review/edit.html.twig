@@ -1,0 +1,30 @@
+{# templates/review/edit.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Your Review{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4 class="mb-0">✏️ Edit Your Review</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Event: {{ review.event.title }}</h5>
+                    
+                    {{ include('review/_form.html.twig', {
+                        button_label: 'Update Review',
+                        event: review.event
+                    }) }}
+                    
+                    <hr>
+                    
+                    {{ include('review/_delete_form.html.twig', {review: review}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

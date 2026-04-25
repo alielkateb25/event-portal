@@ -1,48 +1,237 @@
+{# templates/event/show.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Event{% endblock %}
+{% block title %}{{ event.title }}{% endblock %}
 
 {% block body %}
-    <h1>Event</h1>
+<div class="container mt-4">
+    {# Event Details Card #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h1 class="card-title">{{ event.title }}</h1>
+            <p class="card-text">{{ event.description }}</p>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ event.id }}</td>
-            </tr>
-            <tr>
-                <th>Title</th>
-                <td>{{ event.title }}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{ event.description }}</td>
-            </tr>
-            <tr>
-                <th>EventDate</th>
-                <td>{{ event.eventDate ? event.eventDate|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Location</th>
-                <td>{{ event.location }}</td>
-            </tr>
-        </tbody>
-    </table>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <p><strong>📅 Date:</strong> {{ event.eventDate|date('F d, Y H:i') }}</p>
+                    <p><strong>📍 Location:</strong> {{ event.location }}</p>
+                    <p><strong>👥 Seats:</strong>
+                        {{ event.registeredUsers|length }} / {{ event.maxSeats ?: '∞' }}
+                    </p>
+                </div>
+            </div>
 
-    {% if app.user %}
-    <form method="POST" action="{{ path('app_event_register', {id: event.id}) }}">
-        <button type="submit" class="btn btn-primary">
-            Register for this Event
-        </button>
-    </form>
-    {% else %}
-    <p><a href="{{ path('app_login') }}">Login to register</a></p>
-    {% endif %}
+            {# Registration Button #}
+            <div class="mt-4">
+                {% if app.user %}
+                {% if event.registeredUsers.contains(app.user) %}
+                <div class="alert alert-success">
+                    ✅ You are registered for this event!
+                </div>
+                <form method="POST" action="{{ path('app_event_unregister', {id: event.id}) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-outline-danger">Cancel Registration</button>
+                </form>
+                {% else %}
+                {% if event.maxSeats and event.registeredUsers|length >= event.maxSeats %}
+                <div class="alert alert-warning">
+                    ⚠️ This event is fully booked
+                </div>
+                {% else %}
+                <form method="POST" action="{{ path('app_event_register', {id: event.id}) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-primary">Register Now</button>
+                </form>
+                {% endif %}
+                {% endif %}
+                {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-primary">Login to Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ path('app_event_index') }}">back to list</a>
+    {# Flash Messages #}
+    {% for label, messages in app.flashes %}
+    {% for message in messages %}
+    <div class="alert alert-{{ label }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {# Reviews Section #}
+    {# ===== ONLY ONE Reviews Section ===== #}
+    <div class="mt-5 pt-4 border-top">
+        <h2 class="mb-4">💬 Reviews ({{ event.reviews|length }})</h2>
 
-    <a href="{{ path('app_event_edit', {'id': event.id}) }}">edit</a>
+        {# Average Rating Display #}
+        {% if event.averageRating %}
+        <div class="mb-4 p-3 bg-light rounded">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h4 class="mb-1">Average Rating</h4>
+                    <div class="display-4 text-warning">
+                        {{ event.averageRating }} <small class="fs-6">/ 5</small>
+                    </div>
+                    <div class="text-muted">
+                        {% set ratingCount = event.reviews|length %}
+                        {{ ratingCount }} {{ ratingCount == 1 ? 'review' : 'reviews' }}
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="fs-1">
+                        {% for i in 1..5 %}
+                        {% if i <= event.averageRating %} <span class="text-warning">★</span>
+                            {% else %}
+                            <span class="text-muted">☆</span>
+                            {% endif %}
+                            {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-    {{ include('event/_delete_form.html.twig') }}
-{% endblock %}
+        {# Write Review Button #}
+        {% if app.user %}
+        {% set hasReviewed = false %}
+        {% set userReview = null %}
+        {% for review in event.reviews %}
+        {% if review.user and review.user.id == app.user.id %}
+        {% set hasReviewed = true %}
+        {% set userReview = review %}
+        {% endif %}
+        {% endfor %}
+
+        {% if event.registeredUsers.contains(app.user) %}
+        {% if not hasReviewed %}
+        <a href="{{ path('app_review_create', {id: event.id}) }}" class="btn btn-primary mb-4">
+            ✍️ Write a Review
+        </a>
+        {% else %}
+        <div class="alert alert-info mb-4">
+            ✅ You've already reviewed this event.
+            {% if userReview %}
+            <a href="{{ path('app_review_edit', {id: userReview.id}) }}" class="alert-link">Edit your review</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-warning mb-4">
+            ⚠️ You must be registered for this event to write a review.
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info mb-4">
+            <a href="{{ path('app_login') }}">Login</a> to write a review.
+        </div>
+        {% endif %}
+
+        {# Reviews List #}
+        {% if event.reviews|length > 0 %}
+        <div class="row">
+            {% for review in event.reviews %}
+            {% set isOwner = review.user and app.user and review.user.id == app.user.id %}
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 {% if isOwner %}border-primary{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-subtitle mb-1">
+                                    {{ review.user ? review.user.email|split('@')|first : 'Anonymous' }}
+                                    {% if isOwner %}
+                                    <span class="badge bg-primary">You</span>
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted">
+                                    {{ review.createdAt|date('M d, Y') }}
+                                </small>
+                            </div>
+                            <div class="text-warning fs-5">
+                                {% for i in 1..5 %}
+                                {% if i <= review.rating %}★{% else %}☆{% endif %} {% endfor %} </div>
+                            </div>
+
+                            <p class="card-text">{{ review.comment }}</p>
+
+                            {# Edit/Delete buttons - only show if user is owner #}
+                            {% if isOwner %}
+                            <div class="mt-3 pt-3 border-top">
+                                <a href="{{ path('app_review_edit', {id: review.id}) }}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    ✏️ Edit
+                                </a>
+                                {{ include('review/_delete_form.html.twig', {review: review}) }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-light text-center">
+                <p class="mb-0">No reviews yet. Be the first to share your experience!</p>
+            </div>
+            {% endif %}
+        </div>
+        <a href="{{ path('app_event_index') }}" class="btn btn-outline-secondary">← Back to Events</a>
+    </div>
+    {% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const registerForm = document.querySelector('form[action*="/register"]');
+            const unregisterForm = document.querySelector('form[action*="/unregister"]');
+
+            // Handle Registration with Ajax
+            if (registerForm) {
+                registerForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    try {
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        // Reload to show updated state
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Registration failed. Please try again.');
+                    }
+                });
+            }
+
+            // Handle Unregistration with Ajax
+            if (unregisterForm) {
+                unregisterForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+
+                    if (!confirm('Cancel your registration?')) return;
+
+                    try {
+                        await fetch(this.action, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Cancellation failed.');
+                    }
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+    {% endblock %}
