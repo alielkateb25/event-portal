@@ -15,11 +15,27 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/event')]
 final class EventController extends AbstractController
 {
-    #[Route(name: 'app_event_index', methods: ['GET'])]
-    public function index(EventRepository $eventRepository): Response
-    {
+    #[Route('/', name: 'app_event_index', methods: ['GET'])]
+    public function index(
+        EventRepository $eventRepository,
+        Request $request
+    ): Response {
+        $search = $request->query->get('search');
+
+        // Custom search logic
+        if ($search) {
+            $events = $eventRepository->createQueryBuilder('e')
+                ->where('e.title LIKE :search OR e.location LIKE :search')
+                ->setParameter('search', '%' . $search . '%')
+                ->getQuery()
+                ->getResult();
+        } else {
+            $events = $eventRepository->findAll();
+        }
+
         return $this->render('event/index.html.twig', [
-            'events' => $eventRepository->findAll(),
+            'events' => $events,
+            'search' => $search,
         ]);
     }
 
@@ -75,7 +91,7 @@ final class EventController extends AbstractController
     #[Route('/{id}', name: 'app_event_delete', methods: ['POST'])]
     public function delete(Request $request, Event $event, EntityManagerInterface $entityManager): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$event->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $event->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($event);
             $entityManager->flush();
         }
