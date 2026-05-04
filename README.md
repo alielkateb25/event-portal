@@ -37,7 +37,7 @@ You will find the API endpoint details in the link bellow :
 
 ```bash
 # 1. Clone the repository
-git clone <repository-url>
+git clone https://github.com/alielkateb25/event-portal.git
 cd event-portal
 
 # 2. Install dependencies
