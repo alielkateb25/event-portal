@@ -6,6 +6,7 @@
 {% block body %}
 <div class="container mt-4">
     {# Event Details Card #}
+    <a href="{{ path('app_event_index') }}" class="btn btn-outline-secondary">← Back to Events</a>
     <div class="card mb-4">
         <div class="card-body">
             <h1 class="card-title">{{ event.title }}</h1>
@@ -175,7 +176,6 @@
             </div>
             {% endif %}
         </div>
-        <a href="{{ path('app_event_index') }}" class="btn btn-outline-secondary">← Back to Events</a>
     </div>
     {% block javascripts %}
     {{ parent() }}
