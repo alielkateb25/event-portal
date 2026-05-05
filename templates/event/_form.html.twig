@@ -1,4 +1,220 @@
+{% set eventData = form.vars.data %}
+
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="event-form-fields">
+        {# Title field #}
+        <div class="form-group mb-4">
+            {{ form_label(form.title, 'Title', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter event title'}}) }}
+            {{ form_errors(form.title) }}
+        </div>
+
+        {# Description field #}
+        <div class="form-group mb-4">
+            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Describe your event'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        {# Event date field #}
+        <div class="form-group mb-4">
+            {{ form_label(form.eventDate, 'Event Date', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.eventDate, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.eventDate) }}
+        </div>
+
+        {# Location field #}
+        <div class="form-group mb-4">
+            {{ form_label(form.location, 'Location', {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+            {{ form_widget(form.location, {'attr': {'class': 'form-control', 'placeholder': 'Event venue or online link'}}) }}
+            {{ form_errors(form.location) }}
+        </div>
+
+        {# Registered users display #}
+        {% if eventData.registeredUsers is defined %}
+        <div class="form-group mb-4">
+            <label class="form-label fw-semibold">Registered Users</label>
+            <div class="registered-users-info">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-people-fill text-primary-ep fs-5"></i>
+                    <strong class="text-primary-ep">{{ eventData.registeredUsers|length }} attendee(s) registered</strong>
+                </div>
+                
+                {% if eventData.registeredUsers|length > 0 %}
+                    <div class="registered-users-list">
+                        {% for user in eventData.registeredUsers|slice(0, 8) %}
+                            <div class="user-chip" title="
+                                {%- if user.name is defined and user.name -%}
+                                    {{ user.name }}
+                                {%- elseif user.email is defined and user.email -%}
+                                    {{ user.email }}
+                                {%- else -%}
+                                    User
+                                {%- endif -%}
+                            ">
+                                <i class="bi bi-person-circle"></i>
+                                <span>
+                                    {%- if user.name is defined and user.name -%}
+                                        {{ user.name }}
+                                    {%- elseif user.email is defined and user.email -%}
+                                        {{ user.email|split('@')|first }}
+                                    {%- else -%}
+                                        User
+                                    {%- endif -%}
+                                </span>
+                            </div>
+                        {% endfor %}
+                        {% if eventData.registeredUsers|length > 8 %}
+                            <div class="user-chip more-chip">
+                                <i class="bi bi-plus"></i>
+                                <span>+{{ eventData.registeredUsers|length - 8 }} more</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="text-muted small">
+                        <i class="bi bi-info-circle"></i> No users registered yet
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Other form fields #}
+        {% for field in form %}
+            {% if field.vars.name not in ['title', 'description', 'eventDate', 'location', '_token'] %}
+                <div class="form-group mb-4">
+                    {{ form_label(field, null, {'label_attr': {'class': 'form-label fw-semibold'}}) }}
+                    {{ form_widget(field, {'attr': {'class': 'form-control'}}) }}
+                    {{ form_errors(field) }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div style="padding-top: 1.25rem; border-top: 1px solid var(--ep-border); margin-top: 1rem;">
+        <div class="d-flex gap-2 justify-content-between align-items-center flex-wrap">
+            <button class="btn btn-primary">
+                <i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ button_label|default('Save') }}
+            </button>
+            {% if eventData.id is defined and eventData.id %}
+                <a href="{{ path('app_event_show', {'id': eventData.id}) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-eye me-1"></i>Preview
+                </a>
+            {% endif %}
+        </div>
+    </div>
 {{ form_end(form) }}
+
+<style>
+.event-form-fields {
+    margin-bottom: 0.5rem;
+}
+
+.form-group {
+    position: relative;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--ep-text);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--ep-input-focus);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.registered-users-info {
+    background: var(--ep-surface-alt);
+    border-radius: var(--ep-radius-sm);
+    padding: 1rem;
+    border: 1px solid var(--ep-border);
+}
+
+.registered-users-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: var(--ep-chip-bg);
+    color: var(--ep-chip-text);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--ep-radius-pill);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: var(--ep-transition);
+}
+
+.user-chip i {
+    font-size: 0.875rem;
+}
+
+.user-chip:hover {
+    background: var(--ep-primary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.more-chip {
+    background: var(--ep-border);
+    color: var(--ep-text-muted);
+}
+
+.more-chip:hover {
+    background: var(--ep-text-muted);
+    color: var(--ep-surface);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--ep-danger);
+}
+
+@media (max-width: 768px) {
+    .registered-users-list {
+        gap: 0.375rem;
+    }
+    
+    .user-chip {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+}
+
+[data-bs-theme="dark"] .user-chip {
+    background: var(--ep-surface-alt);
+    color: var(--ep-primary-light);
+}
+
+[data-bs-theme="dark"] .user-chip:hover {
+    background: var(--ep-primary);
+    color: white;
+}
+
+[data-bs-theme="dark"] .more-chip {
+    background: var(--ep-border);
+    color: var(--ep-text-muted);
+}
+</style>
