@@ -3,49 +3,54 @@
 {% block title %}Event index{% endblock %}
 
 {% block body %}
-<h1>Event index</h1>
-
-<form method="GET" class="mb-4">
-    <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="Search events..." value="{{ search ?? '' }}">
-        <button class="btn btn-primary" type="submit">🔍 Search</button>
-        {% if search %}
-        <a href="{{ path('app_event_index') }}" class="btn btn-outline-secondary">Clear</a>
-        {% endif %}
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="mb-0">Event index</h1>
+        <a href="{{ path('app_event_new') }}" class="btn btn-primary">Create new</a>
     </div>
-</form>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>EventDate</th>
-            <th>Location</th>
-            <th>actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for event in events %}
-        <tr>
-            <td>{{ event.id }}</td>
-            <td>{{ event.title }}</td>
-            <td>{{ event.description }}</td>
-            <td>{{ event.eventDate ? event.eventDate|date('Y-m-d H:i:s') : '' }}</td>
-            <td>{{ event.location }}</td>
-            <td>
-                <a href="{{ path('app_event_show', {'id': event.id}) }}">show</a>
-                <a href="{{ path('app_event_edit', {'id': event.id}) }}">edit</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6">no records found</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <form method="GET" class="mb-4">
+        <div class="input-group" style="max-width: 500px;">
+            <input type="text" name="search" class="form-control" placeholder="Search events..." value="{{ search ?? '' }}">
+            <button class="btn btn-primary" type="submit">🔍 Search</button>
+            {% if search %}
+            <a href="{{ path('app_event_index') }}" class="btn btn-outline-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </form>
 
-<a href="{{ path('app_event_new') }}">Create new</a>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th style="min-width: 50px;">Id</th>
+                    <th style="min-width: 150px;">Title</th>
+                    <th style="min-width: 200px;">Description</th>
+                    <th style="min-width: 160px;">EventDate</th>
+                    <th style="min-width: 120px;">Location</th>
+                    <th style="min-width: 100px;">actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>{{ event.id }}</td>
+                    <td><strong>{{ event.title }}</strong></td>
+                    <td>{{ event.description|truncate(50) }}</td>
+                    <td>{{ event.eventDate ? event.eventDate|date('Y-m-d H:i') : '' }}</td>
+                    <td>{{ event.location }}</td>
+                    <td>
+                        <a href="{{ path('app_event_show', {'id': event.id}) }}" class="btn btn-sm btn-info">show</a>
+                        <a href="{{ path('app_event_edit', {'id': event.id}) }}" class="btn btn-sm btn-warning">edit</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">no records found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
