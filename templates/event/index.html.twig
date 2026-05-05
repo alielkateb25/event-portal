@@ -36,7 +36,7 @@
                 <tr>
                     <td>{{ event.id }}</td>
                     <td><strong>{{ event.title }}</strong></td>
-                    <td>{{ event.description|truncate(50) }}</td>
+                    <td>{{ event.description|slice(0, 50) }}</td>
                     <td>{{ event.eventDate ? event.eventDate|date('Y-m-d H:i') : '' }}</td>
                     <td>{{ event.location }}</td>
                     <td>
